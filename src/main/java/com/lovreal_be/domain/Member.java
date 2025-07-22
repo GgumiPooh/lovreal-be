@@ -8,7 +8,6 @@ import lombok.Setter;
 @Getter
 @Entity
 public class Member {
-
     @Id
     @Column(name = "id")
     private String id;
@@ -19,5 +18,10 @@ public class Member {
     @Column(name = "gender")
     private String gender;
 
+    public Member(String id, String password, String gender) {
+        this.id = id;
+        this.password = password;
+        this.gender = gender;
+    }
 }
 
