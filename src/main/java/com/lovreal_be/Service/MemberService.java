@@ -4,7 +4,6 @@ import com.lovreal_be.Config.SecurityConfig;
 import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.domain.Member;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
