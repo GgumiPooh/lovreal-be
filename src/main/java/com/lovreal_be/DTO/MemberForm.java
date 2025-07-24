@@ -1,4 +1,4 @@
-package com.lovreal_be.Controller;
+package com.lovreal_be.DTO;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -9,5 +9,6 @@ public class MemberForm {
 
     private String id;
     private String password;
+    private String passwordCheck;
     private String gender;
 }

@@ -13,7 +13,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder(); // 기본 strength = 10
     }
 
@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .cors(withDefaults()) // ⬅️ WebMvcConfigurer 설정을 인식하게 함
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-                //개발용 코드
+        //개발용 코드
         return http.build();
     }
 
