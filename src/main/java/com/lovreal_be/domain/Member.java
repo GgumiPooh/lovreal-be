@@ -23,5 +23,7 @@ public class Member {
         this.password = password;
         this.gender = gender;
     }
+
+    public Member() {}
 }
 
