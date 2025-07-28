@@ -1,36 +1,49 @@
 package com.lovreal_be.Controller;
-
-import com.lovreal_be.Config.SecurityConfig;
-import com.lovreal_be.DTO.MemberForm;
-import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.Service.MemberService;
 import com.lovreal_be.domain.Member;
-import org.springframework.http.ResponseCookie;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-
-
 @RestController
 public class HelloController {
+
     private final MemberService memberService;
 
     public HelloController(MemberService memberService) {
         this.memberService = memberService;
     }
 
-    @PostMapping("/signup")
-    public void singUp(@RequestBody MemberForm form) {
 
+//    @PostMapping("/idCheck")
+//    public ResponseEntity<?> idCheck(@RequestParam(name = "id") String id){
+//        return memberService.idDuplicateCheck(id);
+//    }
+
+    @PostMapping("/signUp")
+    public ResponseEntity<?> signUp(@RequestBody MemberForm form) {
+        return memberService.signUp(form);
     }
+
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody MemberForm form) {
-        String id = form.getId();
-        String password = form.getPassword();
-
-        return memberService.login(id, password);
+    public ResponseEntity<?> login(@RequestBody MemberForm form, HttpServletResponse response) {
+        return memberService.login(form, response);
     }
 
+    @PostMapping("/cookie")
+    public String cookie(HttpServletRequest request) {
+        String[] result;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("userName".equals(cookie.getName())) {
+                    String value = cookie.getValue();
+                    System.out.println("username 쿠키 값: " + value);
+                }
+            }
+        }
+        return null;
+    }
 }
