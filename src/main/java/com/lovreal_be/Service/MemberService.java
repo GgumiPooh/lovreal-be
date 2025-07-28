@@ -4,6 +4,9 @@ import com.lovreal_be.Config.SecurityConfig;
 import com.lovreal_be.Controller.MemberForm;
 import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.domain.Member;
+import io.jsonwebtoken.Jwts;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -44,8 +47,8 @@ public class MemberService {
 
     }
 
-    public ResponseEntity<?> login(MemberForm form) {
-        String id = form.getId();
+    public ResponseEntity<?> login(MemberForm form, HttpServletResponse response) {
+        String id = form.getId();       
         String password = form.getPassword();
 
         Optional<Member> optionalMember = memberRepository.findById(id);
@@ -53,7 +56,9 @@ public class MemberService {
             Member member = optionalMember.get();
             System.out.println(securityConfig.encoder().encode(password) + " " + member.getPassword());
             if(securityConfig.encoder().matches(password, member.getPassword())) {
-                System.out.println(member.getPassword());
+                Cookie cookie = new Cookie("userName", id);
+                cookie.setMaxAge(60 * 60);
+                response.addCookie(cookie);
                 return ResponseEntity.status(200).body("로그인 완료");
             }
         }
