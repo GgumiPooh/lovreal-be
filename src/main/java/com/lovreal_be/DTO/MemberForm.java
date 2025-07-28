@@ -1,4 +1,4 @@
-package com.lovreal_be.Controller;
+package com.lovreal_be.DTO;
 
 import lombok.Getter;
 import lombok.Setter;

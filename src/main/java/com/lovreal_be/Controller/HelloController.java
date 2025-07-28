@@ -1,6 +1,6 @@
 package com.lovreal_be.Controller;
+import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.Service.MemberService;
-import com.lovreal_be.domain.Member;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

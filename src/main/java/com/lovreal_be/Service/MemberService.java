@@ -1,16 +1,14 @@
 package com.lovreal_be.Service;
 
 import com.lovreal_be.Config.SecurityConfig;
-import com.lovreal_be.Controller.MemberForm;
+import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.domain.Member;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
 import java.util.Optional;
