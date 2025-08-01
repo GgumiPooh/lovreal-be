@@ -18,6 +18,12 @@ public class Member {
     @Column(name = "gender")
     private String gender;
 
+    @Column(name = "couple_id")
+    private String coupleId;
+
+    @Column(name = "couple_request")
+    private String coupleRequest;
+
     public Member(String id, String password, String gender) {
         this.id = id;
         this.password = password;

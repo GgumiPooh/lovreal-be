@@ -1,4 +1,4 @@
-package com.lovreal_be.security.jwt;
+package com.lovreal_be.security.Jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.security.Key;
 import java.util.Date;
 
-public class JwtUtill {
+public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 

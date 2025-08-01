@@ -4,13 +4,16 @@ import com.lovreal_be.Config.SecurityConfig;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.domain.Member;
+import com.lovreal_be.security.Cookie.CookieUtil;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -18,6 +21,7 @@ import java.util.Optional;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final SecurityConfig securityConfig;
+    private final CookieUtil cookieUtil;
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -54,12 +58,19 @@ public class MemberService {
             Member member = optionalMember.get();
             System.out.println(securityConfig.encoder().encode(password) + " " + member.getPassword());
             if(securityConfig.encoder().matches(password, member.getPassword())) {
-                Cookie cookie = new Cookie("userName", id);
-                cookie.setMaxAge(60 * 60);
+                Cookie cookie = cookieUtil.createCookie(member.getId());
                 response.addCookie(cookie);
                 return ResponseEntity.status(200).body("로그인 완료");
             }
         }
         return ResponseEntity.status(401).body("존재하지 않는 회원입니다.");
+    }
+
+    public ResponseEntity<?> cookieCheck(String id, HttpServletRequest request, HttpServletResponse response) {
+        cookieUtil.deleteCookie(request, response, id);
+        if(request.getCookies() != null){
+            return ResponseEntity.status(402).body("로그인해주세요.");
+        }
+        return ResponseEntity.status(402).body("쿠키 확인");
     }
 }
