@@ -3,6 +3,7 @@ package com.lovreal_be.Controller;
 import com.lovreal_be.Config.SecurityConfig;
 import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.domain.Member;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ public class HelloController {
 
     @PostMapping("/lov")
     public void hello(@RequestBody MemberForm form) {
-        BCryptPasswordEncoder bCryptPasswordEncoder = securityConfig.passwordEncoder();
+        BCryptPasswordEncoder bCryptPasswordEncoder = securityConfig.encoder();
         
         String id = form.getId();
         String password = form.getPassword();
@@ -28,5 +29,14 @@ public class HelloController {
         Member member = new Member(id, encodedPassword, gender);
 
         memberRepository.save(member);
+    }
+
+    @PostMapping("/inviteCode")
+    public void inviteCode(@RequestParam String id, @CookieValue(name = "memberId") String memberId) {
+        Member member = memberRepository.findById(id).orElseThrow(() -> new IllegalArgumentException(""));
+        if (member == null) {
+
+        }
+        String inviteCode = RandomStringUtils.randomAlphanumeric(8);
     }
 }

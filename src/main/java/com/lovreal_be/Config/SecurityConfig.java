@@ -13,7 +13,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity
 public class SecurityConfig {
     @Bean
-    public BCryptPasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder encoder() {
         return new BCryptPasswordEncoder(); // 기본 strength = 10
     }
 

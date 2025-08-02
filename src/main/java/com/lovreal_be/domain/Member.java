@@ -18,10 +18,17 @@ public class Member {
     @Column(name = "gender")
     private String gender;
 
+    @Column(name = "inviteCode")
+    private String inviteCode;
+
     public Member(String id, String password, String gender) {
         this.id = id;
         this.password = password;
         this.gender = gender;
+    }
+
+    public Member() {
+
     }
 }
 
