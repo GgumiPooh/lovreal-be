@@ -8,4 +8,5 @@ import java.util.Optional;
 public interface CookieRepository extends JpaRepository<MemberCookieSession, Long> {
     Optional<MemberCookieSession> findByMemberId(String memberId);
     Optional<MemberCookieSession> findMemberIdByCookieValue(String cookieValue);
+
 }

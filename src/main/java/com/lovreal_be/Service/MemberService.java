@@ -8,19 +8,23 @@ import com.lovreal_be.domain.Member;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.FlashMapManager;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
     private final SecurityConfig securityConfig;
+    private final CookieService cookieService;
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -57,18 +61,21 @@ public class MemberService {
             Member member = optionalMember.get();
             System.out.println(securityConfig.encoder().encode(password) + " " + member.getPassword());
             if(securityConfig.encoder().matches(password, member.getPassword())) {
-                CookieUtil.createCookie(response);
+                cookieService.createCookie(response, member.getId());
                 return ResponseEntity.status(200).body("로그인 완료");
             }
         }
         return ResponseEntity.status(401).body("존재하지 않는 회원입니다.");
     }
 
-    public ResponseEntity<?> cookieCheck(String id, HttpServletRequest request, HttpServletResponse response) {
-        CookieUtil.deleteCookie(response, id);
-        if(request.getCookies() != null){
-            return ResponseEntity.status(402).body("로그인해주세요.");
+    public void createInviteCode(HttpServletRequest request) {
+        Member member = cookieService.cookieCheckAndGetMember(request).orElse(null);
+        System.out.println("member: " + member);
+        if(member.getInviteCode() == null) {
+            String inviteCode = RandomStringUtils.randomAlphanumeric(8);
+            member.setInviteCode(inviteCode);
+            memberRepository.save(member);
         }
-        return ResponseEntity.status(402).body("쿠키 확인");
     }
 }
+
