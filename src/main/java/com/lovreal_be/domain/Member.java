@@ -21,6 +21,9 @@ public class Member {
     @Column(name = "inviteCode")
     private String inviteCode;
 
+    @Column(name = "parterId")
+    private String partnerId;
+
     public Member(String id, String password, String gender) {
         this.id = id;
         this.password = password;

@@ -62,22 +62,39 @@ public class MemberService {
                 request.getSession().setAttribute(MEMBER_ID, member.getId());
                 System.out.println("세션 ID: " + request.getSession().getId());
 
-
-                return ResponseEntity.status(200).body("로그인 완료");
+                if(member.getPartnerId() == null) {
+                    return ResponseEntity.status(200).body("로그인 완료 : 커플을 맺어주세요.");
+                }
+                else {
+                    return ResponseEntity.status(201).body("로그인 완료");
+                }
             }
         }
         return ResponseEntity.status(401).body("존재하지 않는 회원입니다.");
     }
 
-    public void createInviteCode(HttpServletRequest request) {
-        String memberId = cookieService.findMemberIdByRequest(request);
-        System.out.println("member id: " + memberId);
-        Member member = memberRepository.findById(memberId).get();
-        if(member.getInviteCode() == null) {
+    public void createInviteCode(Member member) {
             String inviteCode = RandomStringUtils.randomAlphanumeric(8);
             member.setInviteCode(inviteCode);
             memberRepository.save(member);
         }
+
+
+    public ResponseEntity<?> beCouple(String inviteCode, HttpServletRequest request) {
+        Member partner = memberRepository.findByInviteCode(inviteCode);
+        if(partner != null) {
+            String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
+            Member me = memberRepository.findById(memberId).orElse(null);
+            if(me != null) {
+                partner.setPartnerId(me.getId());
+                me.setPartnerId(partner.getId());
+                memberRepository.save(me);
+                memberRepository.save(partner);
+                return ResponseEntity.status(200).body("커플이 되었습니다!");
+            }
+        }
+        return ResponseEntity.status(401).body("코드를 다시 확인해주세요.");
     }
 }
+
 

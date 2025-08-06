@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
+
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
 @RequestMapping("/member")
@@ -29,5 +31,15 @@ public class GetController {
             return null;
         }
         return member.getInviteCode();
+        }
+    @GetMapping("/couplePage")
+    public Member couple(HttpServletRequest request) {
+        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if (member == null) {
+            return null;
+        }
+        return member;
     }
-    }
+
+}
