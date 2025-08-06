@@ -25,9 +25,9 @@ public class HelloController {
     }
 
     @PostMapping("/public/login")
-    public ResponseEntity<?> login(@RequestBody MemberForm form, HttpServletResponse response) {
+    public ResponseEntity<?> login(@RequestBody MemberForm form, HttpServletResponse response, HttpServletRequest request) {
         System.out.println("login");
-        return memberService.login(form, response);
+        return memberService.login(form, response, request);
     }
 
 

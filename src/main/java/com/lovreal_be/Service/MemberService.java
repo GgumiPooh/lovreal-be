@@ -3,21 +3,18 @@ package com.lovreal_be.Service;
 import com.lovreal_be.Config.SecurityConfig;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.Repository.MemberRepository;
-import com.lovreal_be.Security.CookieUtil;
 import com.lovreal_be.domain.Member;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.FlashMapManager;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
+
+import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
 
 @Service
 @AllArgsConstructor
@@ -52,7 +49,7 @@ public class MemberService {
 
     }
 
-    public ResponseEntity<?> login(MemberForm form, HttpServletResponse response) {
+    public ResponseEntity<?> login(MemberForm form, HttpServletResponse response, HttpServletRequest request) {
         String id = form.getId();
         String password = form.getPassword();
 
@@ -62,6 +59,10 @@ public class MemberService {
             System.out.println(securityConfig.encoder().encode(password) + " " + member.getPassword());
             if(securityConfig.encoder().matches(password, member.getPassword())) {
                 cookieService.createCookie(response, member.getId());
+                request.getSession().setAttribute(MEMBER_ID, member.getId());
+                System.out.println("세션 ID: " + request.getSession().getId());
+
+
                 return ResponseEntity.status(200).body("로그인 완료");
             }
         }
@@ -69,8 +70,9 @@ public class MemberService {
     }
 
     public void createInviteCode(HttpServletRequest request) {
-        Member member = cookieService.cookieCheckAndGetMember(request).orElse(null);
-        System.out.println("member: " + member);
+        String memberId = cookieService.findMemberIdByRequest(request);
+        System.out.println("member id: " + memberId);
+        Member member = memberRepository.findById(memberId).get();
         if(member.getInviteCode() == null) {
             String inviteCode = RandomStringUtils.randomAlphanumeric(8);
             member.setInviteCode(inviteCode);
