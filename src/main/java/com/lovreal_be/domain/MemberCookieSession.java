@@ -1,6 +1,7 @@
 package com.lovreal_be.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,9 +30,9 @@ public class MemberCookieSession {
         this.createdAt = LocalDateTime.now();
     }
 
-    public MemberCookieSession() {
+    public MemberCookieSession() {}
 
-    }
+
     public MemberCookieSession(String cookieValue, String memberId) {
         this.cookieValue = cookieValue;
         this.memberId = memberId;

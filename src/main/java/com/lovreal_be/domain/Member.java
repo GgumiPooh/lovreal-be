@@ -1,8 +1,12 @@
 package com.lovreal_be.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -20,6 +24,9 @@ public class Member {
 
     @Column(name = "inviteCode")
     private String inviteCode;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CoupleRequest>  coupleRequests;
 
     @Column(name = "parterId")
     private String partnerId;

@@ -3,6 +3,7 @@ package com.lovreal_be.Service;
 import com.lovreal_be.Config.SecurityConfig;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.Repository.MemberRepository;
+import com.lovreal_be.domain.CoupleRequest;
 import com.lovreal_be.domain.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -80,17 +81,24 @@ public class MemberService {
         }
 
 
-    public ResponseEntity<?> beCouple(String inviteCode, HttpServletRequest request) {
+    public ResponseEntity<?>coupleRequest(String inviteCode, HttpServletRequest request) {
         Member partner = memberRepository.findByInviteCode(inviteCode);
         if(partner != null) {
             String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
             Member me = memberRepository.findById(memberId).orElse(null);
             if(me != null) {
-                partner.setPartnerId(me.getId());
-                me.setPartnerId(partner.getId());
-                memberRepository.save(me);
+            if(inviteCode.equals(me.getInviteCode())) {
+                return ResponseEntity.status(401).body("자신한테는 요청을 보낼 수 없습니다.");
+            }
+                try {
+                CoupleRequest coupleRequest = new CoupleRequest(inviteCode, partner);
+                partner.getCoupleRequests().add(coupleRequest);
                 memberRepository.save(partner);
-                return ResponseEntity.status(200).body("커플이 되었습니다!");
+                } catch (Exception e) { //만약 중복된 값이 있어 저장이 안된다면
+                    System.out.println(e.getMessage());
+                    return ResponseEntity.status(401).body("이미 보낸 요청입니다.");
+                }
+                return ResponseEntity.status(200).body("커플요청을 보냈습니다!");
             }
         }
         return ResponseEntity.status(401).body("코드를 다시 확인해주세요.");

@@ -9,7 +9,6 @@ import com.lovreal_be.domain.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,7 +33,7 @@ public class HelloController {
 
     @PostMapping("/member/inputInviteCode")
     public ResponseEntity<?> inputInviteCode(@RequestParam("inviteCode") String inviteCode, HttpServletRequest request) {
-        return  memberService.beCouple(inviteCode, request);
+        return  memberService.coupleRequest(inviteCode, request);
     }
 
     @PostMapping("/member/inviteCode")
