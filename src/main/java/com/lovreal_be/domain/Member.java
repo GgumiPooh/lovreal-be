@@ -25,9 +25,6 @@ public class Member {
     @Column(name = "inviteCode")
     private String inviteCode;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CoupleRequest>  coupleRequests;
-
     @Column(name = "parterId")
     private String partnerId;
 
