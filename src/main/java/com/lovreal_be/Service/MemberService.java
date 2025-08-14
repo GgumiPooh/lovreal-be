@@ -1,6 +1,7 @@
 package com.lovreal_be.Service;
 
 import com.lovreal_be.Config.SecurityConfig;
+import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.domain.Member;
@@ -11,6 +12,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,11 +38,12 @@ public class MemberService {
 
     public ResponseEntity<?> signUp(MemberForm form) {
         try {
+            String nickname = form.getNickname();
             String id = form.getId();
             String password = form.getPassword();
             String encodedPassword = securityConfig.encoder().encode(password);
             String gender = form.getGender();
-            Member member = new Member(id, encodedPassword, gender);
+            Member member = new Member(nickname, id, encodedPassword, gender);
             memberRepository.save(member);
             return ResponseEntity.status(200).body("회원가입 완료");
         } catch (Exception e) {
@@ -73,14 +77,19 @@ public class MemberService {
         return ResponseEntity.status(401).body("존재하지 않는 회원입니다.");
     }
 
-    public void createInviteCode(Member member) {
+    public void createInviteCode(HttpServletRequest request) {
+        String memberId = cookieService.findMemberIdByRequest(request);
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if (member != null && member.getInviteCode() == null) {
             String inviteCode = RandomStringUtils.randomAlphanumeric(8);
             member.setInviteCode(inviteCode);
             memberRepository.save(member);
         }
 
+        }
 
-    public ResponseEntity<?>coupleRequest(String inviteCode, HttpServletRequest request) {
+
+    public ResponseEntity<?> beCople(String inviteCode, HttpServletRequest request) {
         String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
         Member me = memberRepository.findById(memberId).orElse(null);
         if(me != null) {
@@ -88,7 +97,7 @@ public class MemberService {
 
             if(partner != null) {
             if(inviteCode.equals(me.getInviteCode())) {
-                return ResponseEntity.status(401).body("자신한테는 요청을 보낼 수 없습니다.");
+                return ResponseEntity.status(400).body("자신한테는 요청을 보낼 수 없습니다.");
             }
                 me.setPartnerId(partner.getId());
                 partner.setPartnerId(me.getId());
@@ -96,8 +105,53 @@ public class MemberService {
                 memberRepository.save(partner);
                 return ResponseEntity.status(200).body("커플요청을 보냈습니다!");
             }
+            return ResponseEntity.status(400).body("코드를 다시 확인해주세요.");
         }
-        return ResponseEntity.status(401).body("코드를 다시 확인해주세요.");
+        return ResponseEntity.status(401).body("로그인 해주세요.");
+    }
+
+    public String[] memberAndPartner(HttpServletRequest request) {
+        String memberId = cookieService.findMemberIdByRequest(request);
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if (member == null) {
+            return null;
+        }
+        Member partner = memberRepository.findById(member.getPartnerId()).orElse(null);
+        if(partner == null) {
+            return null;
+        }
+        return new String []{member.getNickname(), partner.getNickname()};
+    }
+
+    public ResponseEntity<?> setBeCoupledDate (CoupleDate coupleDate, HttpServletRequest request) {
+        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if(member == null) {
+            return  ResponseEntity.status(401).body("로그인해주세요.");
+        }
+        try {
+            if(coupleDate.getMonth().hashCode()<10){
+                coupleDate.setMonth("0"+coupleDate.getMonth());
+            }
+            if(coupleDate.getDay().hashCode()<10){
+                coupleDate.setDay("0"+coupleDate.getDay());
+            }
+
+            String year = coupleDate.getYear().toString();
+            String month = coupleDate.getMonth().toString();
+            String day = coupleDate.getDay().toString();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+            LocalDate date = LocalDate.parse(year+month+day, formatter);
+            System.out.println(date.toString());
+            member.setCoupleDate(date);
+            memberRepository.save(member);
+            return ResponseEntity.status(200).body("저장되었습니다.");
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(400).body("에러 발생");
+        }
+
     }
 }
 

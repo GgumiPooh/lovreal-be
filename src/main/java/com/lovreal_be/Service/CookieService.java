@@ -26,6 +26,9 @@ public class CookieService {
 
 
     public String findMemberIdByRequest(HttpServletRequest request) {
+        if(request.getSession().getAttribute(MEMBER_ID) == null) {
+            return null;
+        }
         return request.getSession().getAttribute(MEMBER_ID).toString();
 
     }

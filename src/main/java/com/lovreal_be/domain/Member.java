@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +16,9 @@ public class Member {
     @Id
     @Column(name = "id")
     private String id;
+
+    @Column(name = "nickname")
+    private String nickname;
 
     @Column(name = "password")
     private String password;
@@ -28,7 +32,11 @@ public class Member {
     @Column(name = "parterId")
     private String partnerId;
 
-    public Member(String id, String password, String gender) {
+    @Column(name = "coupleDate")
+    private LocalDate coupleDate;
+
+    public Member(String nickname, String id, String password, String gender) {
+        this.nickname = nickname;
         this.id = id;
         this.password = password;
         this.gender = gender;

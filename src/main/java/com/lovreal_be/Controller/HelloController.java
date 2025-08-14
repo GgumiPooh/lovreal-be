@@ -1,6 +1,7 @@
 package com.lovreal_be.Controller;
 
 import com.lovreal_be.Config.SecurityConfig;
+import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.Repository.MemberRepository;
 import com.lovreal_be.Service.CookieService;
@@ -27,25 +28,22 @@ public class HelloController {
 
     @PostMapping("/public/login")
     public ResponseEntity<?> login(@ModelAttribute MemberForm form, HttpServletResponse response, HttpServletRequest request) {
-        System.out.println("login");
         return memberService.login(form, response, request);
     }
 
     @PostMapping("/member/inputInviteCode")
     public ResponseEntity<?> inputInviteCode(@RequestParam("inviteCode") String inviteCode, HttpServletRequest request) {
-        return  memberService.coupleRequest(inviteCode, request);
+        return memberService.beCople(inviteCode, request);
     }
 
     @PostMapping("/member/inviteCode")
     public void inviteCode(HttpServletRequest request) {
-        System.out.println("inviteCode");
-        String memberId = cookieService.findMemberIdByRequest(request);
-        Member member = memberRepository.findById(memberId).orElse(null);
-        if(member != null && member.getInviteCode() == null) {
-            memberService.createInviteCode(member);
-        }
+        memberService.createInviteCode(request);
     }
 
-
-
+    @PostMapping("/member/coupleDate")
+    public ResponseEntity<?> coupleDate(@RequestBody CoupleDate coupleDate, HttpServletRequest request) {
+        memberService.setBeCoupledDate(coupleDate, request);
+        return null;
+    }
 }

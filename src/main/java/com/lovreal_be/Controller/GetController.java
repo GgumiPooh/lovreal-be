@@ -39,16 +39,7 @@ public class GetController {
 
     @GetMapping("/couple")
     public String[] couple(HttpServletRequest request) {
-        String memberId = cookieService.findMemberIdByRequest(request);
-        Member member = memberRepository.findById(memberId).orElse(null);
-        if (member == null) {
-            return null;
-        }
-        Member partner = memberRepository.findById(member.getPartnerId()).orElse(null);
-        if(partner == null) {
-            return null;
-        }
-        return new String []{member.getId(), member.getPartnerId()};
+        return memberService.memberAndPartner(request);
     }
 
 
