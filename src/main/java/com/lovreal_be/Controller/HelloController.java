@@ -43,7 +43,8 @@ public class HelloController {
 
     @PostMapping("/member/coupleDate")
     public ResponseEntity<?> coupleDate(@RequestBody CoupleDate coupleDate, HttpServletRequest request) {
-        memberService.setBeCoupledDate(coupleDate, request);
-        return null;
+        return memberService.setBeCoupledDate(coupleDate, request);
     }
+
+
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
@@ -110,7 +111,7 @@ public class MemberService {
         return ResponseEntity.status(401).body("로그인 해주세요.");
     }
 
-    public String[] memberAndPartner(HttpServletRequest request) {
+    public String[] memberAndPartnerName(HttpServletRequest request) {
         String memberId = cookieService.findMemberIdByRequest(request);
         Member member = memberRepository.findById(memberId).orElse(null);
         if (member == null) {
@@ -153,6 +154,29 @@ public class MemberService {
         }
 
     }
+
+    public String[] memberHome(HttpServletRequest request) {
+        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if(member == null) {
+            return null;
+        }
+        Member partner = memberRepository.findById(member.getPartnerId()).orElse(null);
+        if(partner == null) {
+            return null;
+        }
+        String gender = "";
+        if(Objects.equals(partner.getGender(), "male")) {
+            gender = "남자";
+        }
+        else {
+            gender = "여자";
+        }
+
+        return new String[]{member.getNickname(), partner.getNickname(), member.getCoupleDate().toString(), gender};
+
+    }
+
 }
 
 
