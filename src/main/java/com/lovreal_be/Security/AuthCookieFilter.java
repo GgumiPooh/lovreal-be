@@ -1,6 +1,6 @@
 package com.lovreal_be.Security;
 
-import com.lovreal_be.Service.CookieService;
+import com.lovreal_be.Service.SessionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -19,7 +19,7 @@ import java.util.Optional;
 public class AuthCookieFilter extends OncePerRequestFilter {
 
     public static final String MEMBER_ID = "memberId";
-    private final CookieService cookieService;
+    private final SessionService sessionService;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -32,9 +32,9 @@ public class AuthCookieFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
             throws ServletException, IOException {
 
-        Optional<Cookie> cookieOpt = CookieUtil.getCookie(request, "SESSION_ID");
+        Optional<Cookie> cookieOpt = CookieUtil.getCookie(request, "JSESSIONID");
         if (cookieOpt.isPresent()) {
-            String memberId = cookieService.findMemberIdByRequest(request);
+            String memberId = sessionService.findMemberIdByRequest(request);
             if (memberId != null) {
                 chain.doFilter(request, response);
                 return;

@@ -14,7 +14,7 @@ public class CookieUtil {
 
     public String createCookie(HttpServletResponse response) {
         String cookieValue = UUID.randomUUID().toString();
-        Cookie cookie = new Cookie("SESSION_ID", cookieValue);
+        Cookie cookie = new Cookie("SESSIONID" , cookieValue);
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(24 * 60 * 60); // 1일

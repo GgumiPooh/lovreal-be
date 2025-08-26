@@ -13,7 +13,7 @@ import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
 
 @Service
 @RequiredArgsConstructor
-public class CookieService {
+public class SessionService {
 
     private final CookieRepository cookieRepository;
     private final MemberRepository memberRepository;

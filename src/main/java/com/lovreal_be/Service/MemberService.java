@@ -25,7 +25,7 @@ import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
 public class MemberService {
     private final MemberRepository memberRepository;
     private final SecurityConfig securityConfig;
-    private final CookieService cookieService;
+    private final SessionService sessionService;
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -63,23 +63,23 @@ public class MemberService {
             Member member = optionalMember.get();
             System.out.println(securityConfig.encoder().encode(password) + " " + member.getPassword());
             if(securityConfig.encoder().matches(password, member.getPassword())) {
-                cookieService.createCookie(response, member.getId());
+//                cookieService.createCookie(response, member.getId());
                 request.getSession().setAttribute(MEMBER_ID, member.getId());
                 System.out.println("세션 ID: " + request.getSession().getId());
-
                 if(member.getPartnerId() == null) {
                     return ResponseEntity.status(200).body("로그인 완료 : 커플을 맺어주세요.");
                 }
-                else {
+                else if(member.getCoupleDate() == null) {
                     return ResponseEntity.status(201).body("로그인 완료");
                 }
+                else return ResponseEntity.status(202).body("로그인 완료");
             }
         }
         return ResponseEntity.status(401).body("존재하지 않는 회원입니다.");
     }
 
     public void createInviteCode(HttpServletRequest request) {
-        String memberId = cookieService.findMemberIdByRequest(request);
+        String memberId = sessionService.findMemberIdByRequest(request);
         Member member = memberRepository.findById(memberId).orElse(null);
         if (member != null && member.getInviteCode() == null) {
             String inviteCode = RandomStringUtils.randomAlphanumeric(8);
@@ -90,7 +90,7 @@ public class MemberService {
         }
 
 
-    public ResponseEntity<?> beCople(String inviteCode, HttpServletRequest request) {
+    public ResponseEntity<?> beCouple(String inviteCode, HttpServletRequest request) {
         String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
         Member me = memberRepository.findById(memberId).orElse(null);
         if(me != null) {
@@ -104,7 +104,7 @@ public class MemberService {
                 partner.setPartnerId(me.getId());
                 memberRepository.save(me);
                 memberRepository.save(partner);
-                return ResponseEntity.status(200).body("커플요청을 보냈습니다!");
+                return ResponseEntity.status(200).body("커플이 되었습니다!");
             }
             return ResponseEntity.status(400).body("코드를 다시 확인해주세요.");
         }
@@ -112,7 +112,7 @@ public class MemberService {
     }
 
     public String[] memberAndPartnerName(HttpServletRequest request) {
-        String memberId = cookieService.findMemberIdByRequest(request);
+        String memberId = sessionService.findMemberIdByRequest(request);
         Member member = memberRepository.findById(memberId).orElse(null);
         if (member == null) {
             return null;
@@ -150,13 +150,14 @@ public class MemberService {
             return ResponseEntity.status(200).body("저장되었습니다.");
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ResponseEntity.status(400).body("에러 발생");
+            return ResponseEntity.status(400).body("다시 입력해주세요.");
         }
 
     }
 
     public String[] memberHome(HttpServletRequest request) {
-        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
+        String memberId = sessionService.findMemberIdByRequest(request);
+//        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
         Member member = memberRepository.findById(memberId).orElse(null);
         if(member == null) {
             return null;
