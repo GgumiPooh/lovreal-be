@@ -1,7 +1,7 @@
 package com.lovreal_be.Service;
 
-import com.lovreal_be.Repository.CookieRepository;
-import com.lovreal_be.Repository.MemberRepository;
+import com.lovreal_be.repository.CookieRepository;
+import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.Security.CookieUtil;
 import com.lovreal_be.domain.MemberCookieSession;
 import jakarta.servlet.http.HttpServletRequest;

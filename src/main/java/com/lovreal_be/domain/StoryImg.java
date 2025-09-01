@@ -1,8 +1,6 @@
 package com.lovreal_be.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,16 +10,20 @@ import lombok.Setter;
 public class StoryImg {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long imgId;
+
     @Column
     private String src;
 
-    @Column
-    private String memberId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "storyContent_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_story_content_id"))
+    private StoryContent storyContent;
 
 
-    public  StoryImg(String src, String memberId) {
+    public  StoryImg(String src) {
         this.src = src;
-        this.memberId = memberId;
     }
 
     public StoryImg() {

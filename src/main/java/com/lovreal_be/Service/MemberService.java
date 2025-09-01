@@ -3,20 +3,23 @@ package com.lovreal_be.Service;
 import com.lovreal_be.Config.SecurityConfig;
 import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
-import com.lovreal_be.Repository.MemberRepository;
+import com.lovreal_be.DTO.StoryForm;
+import com.lovreal_be.repository.MemberRepository;
+import com.lovreal_be.repository.StoryRepository;
 import com.lovreal_be.domain.Member;
+import com.lovreal_be.domain.StoryContent;
+import com.lovreal_be.domain.StoryImg;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
 
@@ -26,6 +29,8 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final SecurityConfig securityConfig;
     private final SessionService sessionService;
+    private final StoryRepository storyRepository;
+    private final S3Service s3Service;
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -173,11 +178,47 @@ public class MemberService {
         else {
             gender = "여자";
         }
-
         return new String[]{member.getNickname(), partner.getNickname(), member.getCoupleDate().toString(), gender};
-
     }
 
+    public ResponseEntity<?> writeNewStory(StoryForm storyForm, HttpServletRequest request) {
+        String memberId = sessionService.findMemberIdByRequest(request);
+        if(memberId == null) {
+            return ResponseEntity.status(401).body("로그인해주세요.");
+        }
+        MultipartFile[] images = storyForm.getImages();
+        String content = storyForm.getContent();
+        List<String> urls = s3Service.uploadImageAndGetUrl(images);
+        StoryContent storyContent = new StoryContent(memberId, content);
+
+       for(String url : urls) {
+           storyContent.addImage(new StoryImg(url));
+       }
+        storyRepository.save(storyContent);
+        return ResponseEntity.status(200).body("등록 완료");
+    }
+
+    public ResponseEntity<?> board(HttpServletRequest request) {
+        String memberId = sessionService.findMemberIdByRequest(request);
+        if(memberId == null) {
+            return null;
+        }
+
+        List<StoryContent> body = storyRepository.findByMemberId(memberId)
+                .stream()
+                .map(sc -> new StoryContent(
+                        sc.getMemberId(),
+                        sc.getContent(),
+                        sc.getStoryImgs().stream()
+                                .map(img -> new StoryImg(img.getSrc()))
+                                .toList()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(body);
+//        return storyRepository.findByMemberId(memberId);
+
+    }
 }
 
 

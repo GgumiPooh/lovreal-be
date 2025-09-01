@@ -1,16 +1,20 @@
 package com.lovreal_be.Controller;
 
-import com.lovreal_be.Repository.MemberRepository;
+import com.lovreal_be.domain.StoryContent;
+import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.Service.SessionService;
 import com.lovreal_be.Service.MemberService;
 import com.lovreal_be.domain.Member;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
-@RequestMapping("/member")
+@RequestMapping("/api/member")
 @AllArgsConstructor
 public class GetController {
     private final MemberService memberService;
@@ -36,6 +40,11 @@ public class GetController {
     @GetMapping("/profile")
     public String[] memberHome(HttpServletRequest request) {
         return memberService.memberHome(request);
+    }
+
+    @GetMapping("/board")
+    public ResponseEntity<?> board(HttpServletRequest request) {
+        return memberService.board(request);
     }
 
 

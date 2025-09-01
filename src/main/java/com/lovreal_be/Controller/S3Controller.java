@@ -22,6 +22,6 @@ public class S3Controller {
     @PostMapping("/storyImgUpload")
     public void imageUpload(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
         String objectKey = "images/" + UUID.randomUUID() + "-storyImg.png";
-        s3Service.uploadImageAndGetUrl(objectKey, file, request);
+//        s3Service.uploadImageAndGetUrl(objectKey, file, request);
     }
 }

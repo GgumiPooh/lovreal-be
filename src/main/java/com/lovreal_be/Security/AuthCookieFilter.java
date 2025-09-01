@@ -24,7 +24,7 @@ public class AuthCookieFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/public");
+        return path.startsWith("/api/public");
     }
 
 

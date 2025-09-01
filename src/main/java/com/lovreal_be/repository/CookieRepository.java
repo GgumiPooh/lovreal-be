@@ -1,4 +1,4 @@
-package com.lovreal_be.Repository;
+package com.lovreal_be.repository;
 
 import com.lovreal_be.domain.MemberCookieSession;
 import org.springframework.data.jpa.repository.JpaRepository;
