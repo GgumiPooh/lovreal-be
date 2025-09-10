@@ -1,19 +1,21 @@
-package com.lovreal_be.Service;
+package com.lovreal_be.service;
 
 import com.lovreal_be.repository.CookieRepository;
 import com.lovreal_be.repository.MemberRepository;
-import com.lovreal_be.Security.CookieUtil;
+import com.lovreal_be.security.CookieUtil;
 import com.lovreal_be.domain.MemberCookieSession;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
+//import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
 
 @Service
 @RequiredArgsConstructor
 public class SessionService {
+
+    private final String MEMBER_ID = "aa";
 
     private final CookieRepository cookieRepository;
     private final MemberRepository memberRepository;

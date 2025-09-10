@@ -1,6 +1,6 @@
-package com.lovreal_be.Service;
+package com.lovreal_be.service;
 
-import com.lovreal_be.Config.SecurityConfig;
+import com.lovreal_be.config.SecurityConfig;
 import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.DTO.StoryForm;
@@ -17,20 +17,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
+//import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
 
 @Service
 @AllArgsConstructor
-public class MemberService {
+public class MemberServiceImpl {
+    private final String MEMBER_ID = "aa";
     private final MemberRepository memberRepository;
     private final SecurityConfig securityConfig;
     private final SessionService sessionService;
     private final StoryRepository storyRepository;
     private final S3Service s3Service;
+    private final JwtService jwtService;
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -59,7 +62,7 @@ public class MemberService {
 
     }
 
-    public ResponseEntity<?> login(MemberForm form, HttpServletResponse response, HttpServletRequest request) {
+    public ResponseEntity<String> login(MemberForm form, HttpServletResponse response, HttpServletRequest request) {
         String id = form.getId();
         String password = form.getPassword();
 
@@ -83,37 +86,31 @@ public class MemberService {
         return ResponseEntity.status(401).body("존재하지 않는 회원입니다.");
     }
 
-    public void createInviteCode(HttpServletRequest request) {
-        String memberId = sessionService.findMemberIdByRequest(request);
-        Member member = memberRepository.findById(memberId).orElse(null);
-        if (member != null && member.getInviteCode() == null) {
+    public ResponseEntity<String> createInviteCode(Member member) {
+        if (member.getInviteCode() == null) {
             String inviteCode = RandomStringUtils.randomAlphanumeric(8);
             member.setInviteCode(inviteCode);
             memberRepository.save(member);
+            return ResponseEntity.ok().body("초대코드가 생성되었습니다.");
         }
+            return ResponseEntity.ok().body("초대코드가 존재합니다.");
+    }
 
-        }
 
-
-    public ResponseEntity<?> beCouple(String inviteCode, HttpServletRequest request) {
-        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
-        Member me = memberRepository.findById(memberId).orElse(null);
-        if(me != null) {
+    public ResponseEntity<String> beCouple(String inviteCode, Member member) {
             Member partner = memberRepository.findByInviteCode(inviteCode);
 
             if(partner != null) {
-            if(inviteCode.equals(me.getInviteCode())) {
+            if(inviteCode.equals(member.getInviteCode())) {
                 return ResponseEntity.status(400).body("자신한테는 요청을 보낼 수 없습니다.");
             }
-                me.setPartnerId(partner.getId());
-                partner.setPartnerId(me.getId());
-                memberRepository.save(me);
+                member.setPartnerId(partner.getId());
+                partner.setPartnerId(member.getId());
+                memberRepository.save(member);
                 memberRepository.save(partner);
                 return ResponseEntity.status(200).body("커플이 되었습니다!");
             }
             return ResponseEntity.status(400).body("코드를 다시 확인해주세요.");
-        }
-        return ResponseEntity.status(401).body("로그인 해주세요.");
     }
 
     public String[] memberAndPartnerName(HttpServletRequest request) {
@@ -129,7 +126,7 @@ public class MemberService {
         return new String []{member.getNickname(), partner.getNickname()};
     }
 
-    public ResponseEntity<?> setBeCoupledDate (CoupleDate coupleDate, HttpServletRequest request) {
+    public ResponseEntity<String> setBeCoupledDate (CoupleDate coupleDate, HttpServletRequest request) {
         String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
         Member member = memberRepository.findById(memberId).orElse(null);
         if(member == null) {
@@ -181,21 +178,32 @@ public class MemberService {
         return new String[]{member.getNickname(), partner.getNickname(), member.getCoupleDate().toString(), gender};
     }
 
-    public ResponseEntity<?> writeNewStory(StoryForm storyForm, HttpServletRequest request) {
-        String memberId = sessionService.findMemberIdByRequest(request);
-        if(memberId == null) {
-            return ResponseEntity.status(401).body("로그인해주세요.");
+    public void writeNewStory(StoryForm storyForm,HttpServletResponse response, HttpServletRequest request) throws IOException {
+        Member member = jwtService.getTokenAndFindMember(request);
+        response.setContentType("application/json; charset=UTF-8");
+        if(member == null) {
+            String jsonResponse = String.format(
+                    "{\"message\": \"%s\"}",
+                    "로그인해주세요."
+            );
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(jsonResponse);
         }
         MultipartFile[] images = storyForm.getImages();
         String content = storyForm.getContent();
         List<String> urls = s3Service.uploadImageAndGetUrl(images);
-        StoryContent storyContent = new StoryContent(memberId, content);
+        StoryContent storyContent = new StoryContent(member.getId(), content);
 
-       for(String url : urls) {
+        for(String url : urls) {
            storyContent.addImage(new StoryImg(url));
        }
         storyRepository.save(storyContent);
-        return ResponseEntity.status(200).body("등록 완료");
+        response.setStatus(HttpServletResponse.SC_OK);
+        String jsonResponse = String.format(
+                "{\"message\": \"%s\"}",
+                "등록완료."
+        );
+       response.getWriter().write(jsonResponse);
     }
 
     public ResponseEntity<?> board(HttpServletRequest request) {
