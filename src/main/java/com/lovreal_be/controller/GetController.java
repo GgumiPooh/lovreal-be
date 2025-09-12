@@ -1,14 +1,17 @@
 package com.lovreal_be.controller;
 
+import com.lovreal_be.DTO.StoryForm;
 import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.service.JwtService;
 import com.lovreal_be.service.SessionService;
 import com.lovreal_be.service.MemberServiceImpl;
 import com.lovreal_be.domain.Member;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
@@ -27,8 +30,8 @@ public class GetController {
         return member.getInviteCode();
     }
 
-    @GetMapping("/couple")
-    public String[] couple(HttpServletRequest request) {
+    @GetMapping("/couple-date")
+    public String[] coupleDate(HttpServletRequest request) {
         return memberServiceImpl.memberAndPartnerName(request);
     }
 
@@ -38,8 +41,19 @@ public class GetController {
     }
 
     @GetMapping("/board")
-    public ResponseEntity<?> board(HttpServletRequest request) {
-        return memberServiceImpl.board(request);
+    public List<StoryForm> board(HttpServletRequest request, HttpServletResponse response) {
+        return memberServiceImpl.board(request, response);
+    }
+
+    @GetMapping("/d-day")
+    public Long dDay(HttpServletRequest request) {
+        return memberServiceImpl.dDayCalculator(request);
+    }
+
+    @GetMapping("/profile-img")
+    public String profileImg(HttpServletRequest request) {
+        System.out.println("profileImg");
+        return memberServiceImpl.memberProfileImg(request);
     }
 
 

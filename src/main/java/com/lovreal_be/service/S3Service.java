@@ -36,7 +36,7 @@ public class S3Service {
 
     private final  S3Template  s3Template;
 
-    public List<String> uploadImageAndGetUrl(MultipartFile[] files) {
+    public List<String> uploadImageAndGetUrl(List<MultipartFile> files) {
         System.out.println("uploadImageAndGetUrl");
         List<String> urls = new ArrayList<>();
         for(MultipartFile file : files) {

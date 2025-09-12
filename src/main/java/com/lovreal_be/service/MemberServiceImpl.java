@@ -1,5 +1,6 @@
 package com.lovreal_be.service;
 
+import com.lovreal_be.DTO.StoryImgForm;
 import com.lovreal_be.config.SecurityConfig;
 import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
@@ -7,7 +8,7 @@ import com.lovreal_be.DTO.StoryForm;
 import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.repository.StoryRepository;
 import com.lovreal_be.domain.Member;
-import com.lovreal_be.domain.StoryContent;
+import com.lovreal_be.domain.Story;
 import com.lovreal_be.domain.StoryImg;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 //import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
@@ -114,11 +116,7 @@ public class MemberServiceImpl {
     }
 
     public String[] memberAndPartnerName(HttpServletRequest request) {
-        String memberId = sessionService.findMemberIdByRequest(request);
-        Member member = memberRepository.findById(memberId).orElse(null);
-        if (member == null) {
-            return null;
-        }
+        Member member = jwtService.getTokenAndFindMember(request);
         Member partner = memberRepository.findById(member.getPartnerId()).orElse(null);
         if(partner == null) {
             return null;
@@ -126,13 +124,10 @@ public class MemberServiceImpl {
         return new String []{member.getNickname(), partner.getNickname()};
     }
 
-    public ResponseEntity<String> setBeCoupledDate (CoupleDate coupleDate, HttpServletRequest request) {
-        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
-        Member member = memberRepository.findById(memberId).orElse(null);
-        if(member == null) {
-            return  ResponseEntity.status(401).body("로그인해주세요.");
-        }
+    public void setBeCoupledDay(CoupleDate coupleDate, HttpServletRequest request, HttpServletResponse response) {
+
         try {
+            Member member = jwtService.getTokenAndFindMember(request);
             if(coupleDate.getMonth().hashCode()<10){
                 coupleDate.setMonth("0"+coupleDate.getMonth());
             }
@@ -146,13 +141,19 @@ public class MemberServiceImpl {
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
             LocalDate date = LocalDate.parse(year+month+day, formatter);
-            System.out.println(date.toString());
             member.setCoupleDate(date);
             memberRepository.save(member);
-            return ResponseEntity.status(200).body("저장되었습니다.");
+
+            response.setContentType("application/json; charset=UTF-8");
+            String jsonResponse = String.format(
+                    "{\"message\": \"%s\"}",
+                    "저장되었습니다."
+            );
+            response.getWriter().write(jsonResponse);
+            response.setStatus(HttpServletResponse.SC_OK);
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return ResponseEntity.status(400).body("다시 입력해주세요.");
+            response.setStatus(500);
         }
 
     }
@@ -179,6 +180,7 @@ public class MemberServiceImpl {
     }
 
     public void writeNewStory(StoryForm storyForm,HttpServletResponse response, HttpServletRequest request) throws IOException {
+        System.out.println("urls = " );
         Member member = jwtService.getTokenAndFindMember(request);
         response.setContentType("application/json; charset=UTF-8");
         if(member == null) {
@@ -188,16 +190,18 @@ public class MemberServiceImpl {
             );
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write(jsonResponse);
+            return;
         }
-        MultipartFile[] images = storyForm.getImages();
+
+        List<MultipartFile> fils = storyForm.getImages();
         String content = storyForm.getContent();
-        List<String> urls = s3Service.uploadImageAndGetUrl(images);
-        StoryContent storyContent = new StoryContent(member.getId(), content);
+        List<String> urls = s3Service.uploadImageAndGetUrl(fils);
+        Story story = new Story(member.getId(), content);
 
         for(String url : urls) {
-           storyContent.addImage(new StoryImg(url));
+           story.addImage(new StoryImg(url));
        }
-        storyRepository.save(storyContent);
+        storyRepository.save(story);
         response.setStatus(HttpServletResponse.SC_OK);
         String jsonResponse = String.format(
                 "{\"message\": \"%s\"}",
@@ -206,26 +210,37 @@ public class MemberServiceImpl {
        response.getWriter().write(jsonResponse);
     }
 
-    public ResponseEntity<?> board(HttpServletRequest request) {
-        String memberId = sessionService.findMemberIdByRequest(request);
-        if(memberId == null) {
-            return null;
+    public List<StoryForm> board(HttpServletRequest request, HttpServletResponse response) {
+        Member member = jwtService.getTokenAndFindMember(request);
+        String memberId = member.getId();
+        System.out.println("memberId = " + memberId);
+        List<StoryForm> body = storyRepository.findByMemberId(memberId)
+                .stream().map(story -> new StoryForm(
+                        memberId, story.getContent(), story.getStoryImgs().stream().map(
+                                imgForm-> new StoryImgForm(imgForm.getImgId(), imgForm.getSrc())).toList())).toList();
+//                        story.getStoryImgs().stream().map(StoryImg::getSrc).toList())).toList();
+        System.out.println("body = " + body);
+        response.setContentType("application/json; charset=UTF-8");
+        response.setStatus(HttpServletResponse.SC_OK);
+        return body;
+
+    }
+
+    public Long dDayCalculator(HttpServletRequest request) {
+        Member member = jwtService.getTokenAndFindMember(request);
+        LocalDate coupleDay = member.getCoupleDate();
+        LocalDate today = LocalDate.now();
+        return ChronoUnit.DAYS.between(coupleDay, today);
+    }
+
+    public String memberProfileImg(HttpServletRequest request) {
+        Member member = jwtService.getTokenAndFindMember(request);
+        if(member.getProfileImg() == null) {
+            return "https://lovreal-files.s3.ap-northeast-2.amazonaws.com/images/%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5.jpg";
         }
-
-        List<StoryContent> body = storyRepository.findByMemberId(memberId)
-                .stream()
-                .map(sc -> new StoryContent(
-                        sc.getMemberId(),
-                        sc.getContent(),
-                        sc.getStoryImgs().stream()
-                                .map(img -> new StoryImg(img.getSrc()))
-                                .toList()
-                ))
-                .toList();
-
-        return ResponseEntity.ok(body);
-//        return storyRepository.findByMemberId(memberId);
-
+        else {
+            return member.getProfileImg();
+        }
     }
 }
 

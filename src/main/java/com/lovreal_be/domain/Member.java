@@ -35,6 +35,9 @@ public class Member {
     @Column(name = "coupleDate")
     private LocalDate coupleDate;
 
+    @Column(name = "profileImg")
+    private String profileImg;
+
     public Member(String nickname, String id, String password, String gender) {
         this.nickname = nickname;
         this.id = id;

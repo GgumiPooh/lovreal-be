@@ -44,8 +44,9 @@ public class MemberController {
     }
 
     @PostMapping("/couple-date")
-    public ResponseEntity<?> coupleDate(@RequestBody CoupleDate coupleDate, HttpServletRequest request) {
-        return memberServiceImpl.setBeCoupledDate(coupleDate, request);
+    public void beCoupleDay(@RequestBody CoupleDate coupleDate, HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("coupleDate = " + coupleDate);
+        memberServiceImpl.setBeCoupledDay(coupleDate, request, response);
     }
 
     @PostMapping("/profile")
@@ -58,7 +59,9 @@ public class MemberController {
 
     @PostMapping("/new-story")
     public void newStory(@ModelAttribute StoryForm storyForm, HttpServletResponse response, HttpServletRequest request) throws IOException {
+        System.out.println("storyForm = " + storyForm);
         memberServiceImpl.writeNewStory(storyForm,response, request);
     }
 }
+
 

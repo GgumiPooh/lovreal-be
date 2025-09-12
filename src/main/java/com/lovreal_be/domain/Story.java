@@ -1,17 +1,17 @@
 package com.lovreal_be.domain;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Entity
 @Getter
-public class StoryContent {
+public class Story {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,20 +22,20 @@ public class StoryContent {
     @Column
     private String memberId;
 
-    @OneToMany(mappedBy = "storyContent" , cascade = CascadeType.ALL,  orphanRemoval = true)
+    @OneToMany(mappedBy = "story" , cascade = CascadeType.ALL,  orphanRemoval = true)
     private List<StoryImg> storyImgs = new ArrayList<>();
 
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createAt;
 
-    public StoryContent() {}
+    public Story() {}
 
-    public StoryContent(String memberId, String content) {
+    public Story(String memberId, String content) {
         this.memberId = memberId;
         this.content = content;
     }
-    public StoryContent(String memberId, String content, List<StoryImg> storyImgs) {
+    public Story(String memberId, String content, List<StoryImg> storyImgs) {
         this.memberId = memberId;
         this.content = content;
         this.storyImgs  = storyImgs;
@@ -49,6 +49,6 @@ public class StoryContent {
 
     public void addImage(StoryImg image) {
         storyImgs.add(image);
-        image.setStoryContent(this); // owning side
+        image.setStory(this); // owning side
     }
 }
