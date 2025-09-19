@@ -1,4 +1,4 @@
-package com.lovreal_be.Security;
+package com.lovreal_be.security;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;

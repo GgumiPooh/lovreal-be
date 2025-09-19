@@ -1,4 +1,4 @@
-package com.lovreal_be.Config;
+package com.lovreal_be.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

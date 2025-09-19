@@ -17,9 +17,9 @@ public class StoryImg {
     private String src;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "storyContent_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_story_content_id"))
-    private StoryContent storyContent;
+    @JoinColumn(name = "story_id", nullable = false,
+            foreignKey = @ForeignKey(name = "fk_story_id"))
+    private Story story;
 
 
     public  StoryImg(String src) {

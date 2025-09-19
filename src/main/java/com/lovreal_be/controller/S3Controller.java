@@ -1,6 +1,6 @@
-package com.lovreal_be.Controller;
+package com.lovreal_be.controller;
 
-import com.lovreal_be.Service.S3Service;
+import com.lovreal_be.service.S3Service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
