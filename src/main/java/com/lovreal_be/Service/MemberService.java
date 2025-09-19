@@ -1,6 +1,7 @@
 package com.lovreal_be.Service;
 
 import com.lovreal_be.Config.SecurityConfig;
+
 import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.DTO.StoryForm;
@@ -9,12 +10,14 @@ import com.lovreal_be.repository.StoryRepository;
 import com.lovreal_be.domain.Member;
 import com.lovreal_be.domain.StoryContent;
 import com.lovreal_be.domain.StoryImg;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -23,14 +26,17 @@ import java.util.*;
 
 import static com.lovreal_be.Security.AuthCookieFilter.MEMBER_ID;
 
+
 @Service
 @AllArgsConstructor
 public class MemberService {
     private final MemberRepository memberRepository;
     private final SecurityConfig securityConfig;
+
     private final SessionService sessionService;
     private final StoryRepository storyRepository;
     private final S3Service s3Service;
+
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -68,6 +74,7 @@ public class MemberService {
             Member member = optionalMember.get();
             System.out.println(securityConfig.encoder().encode(password) + " " + member.getPassword());
             if(securityConfig.encoder().matches(password, member.getPassword())) {
+
 //                cookieService.createCookie(response, member.getId());
                 request.getSession().setAttribute(MEMBER_ID, member.getId());
                 System.out.println("세션 ID: " + request.getSession().getId());
@@ -82,6 +89,7 @@ public class MemberService {
         }
         return ResponseEntity.status(401).body("존재하지 않는 회원입니다.");
     }
+
 
     public void createInviteCode(HttpServletRequest request) {
         String memberId = sessionService.findMemberIdByRequest(request);
