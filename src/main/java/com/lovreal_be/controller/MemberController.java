@@ -7,7 +7,6 @@ import com.lovreal_be.security.BearerTokenResolver;
 import com.lovreal_be.security.JwtTokenProvider;
 import com.lovreal_be.service.JwtService;
 import com.lovreal_be.service.MemberServiceImpl;
-import com.lovreal_be.service.SessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ import java.io.IOException;
 @RequestMapping("/api/member")
 public class MemberController {
     private final MemberServiceImpl memberServiceImpl;
-    private final SessionService sessionService;
     private final JwtTokenProvider jwtTokenProvider;
     private final BearerTokenResolver bearerTokenResolver;
     private final JwtService jwtService;
@@ -51,7 +49,7 @@ public class MemberController {
 
     @PostMapping("/profile")
     public ResponseEntity<?> profile(HttpServletRequest request) {
-        if (sessionService.findMemberIdByRequest(request) == null) {
+        if (jwtService.getTokenAndFindMember(request) == null) {
             return ResponseEntity.status(401).body("로그인해주세요.");
         }
         return ResponseEntity.ok().build();
