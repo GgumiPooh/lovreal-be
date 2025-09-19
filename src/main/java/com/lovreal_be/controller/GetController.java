@@ -3,7 +3,6 @@ package com.lovreal_be.controller;
 import com.lovreal_be.DTO.StoryForm;
 import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.service.JwtService;
-import com.lovreal_be.service.SessionService;
 import com.lovreal_be.service.MemberServiceImpl;
 import com.lovreal_be.domain.Member;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +18,6 @@ import java.util.List;
 @AllArgsConstructor
 public class GetController {
     private final MemberServiceImpl memberServiceImpl;
-    private final SessionService sessionService;
     private final MemberRepository memberRepository;
     private final JwtService jwtService;
 

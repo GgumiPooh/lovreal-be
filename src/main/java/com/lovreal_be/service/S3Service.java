@@ -26,7 +26,6 @@ public class S3Service {
 
     private final S3Client s3Client;
     private final StoryRepository storyRepository;
-    private final SessionService sessionService;
 
     @Value("${aws.region}")
     private String awsRegion;

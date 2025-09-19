@@ -38,6 +38,8 @@ public class Member {
     @Column(name = "profileImg")
     private String profileImg;
 
+    public Member(){}
+
     public Member(String nickname, String id, String password, String gender) {
         this.nickname = nickname;
         this.id = id;
@@ -45,7 +47,9 @@ public class Member {
         this.gender = gender;
     }
 
-    public Member() {
+    public Member(String id, String gender) {
+        this.id = id;
+        this.gender = gender;
 
     }
 }

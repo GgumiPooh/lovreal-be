@@ -32,7 +32,6 @@ public class MemberServiceImpl {
     private final String MEMBER_ID = "aa";
     private final MemberRepository memberRepository;
     private final SecurityConfig securityConfig;
-    private final SessionService sessionService;
     private final StoryRepository storyRepository;
     private final S3Service s3Service;
     private final JwtService jwtService;
@@ -159,9 +158,8 @@ public class MemberServiceImpl {
     }
 
     public String[] memberHome(HttpServletRequest request) {
-        String memberId = sessionService.findMemberIdByRequest(request);
+        Member member = jwtService.getTokenAndFindMember(request);
 //        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
-        Member member = memberRepository.findById(memberId).orElse(null);
         if(member == null) {
             return null;
         }

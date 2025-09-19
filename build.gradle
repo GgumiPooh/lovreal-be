@@ -58,7 +58,8 @@ dependencies {
     //Redis
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
-
+    implementation 'org.springframework.boot:spring-boot-starter-web'      // MVC
+    implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebClient용
 }
 
 //tasks.named('test') {
