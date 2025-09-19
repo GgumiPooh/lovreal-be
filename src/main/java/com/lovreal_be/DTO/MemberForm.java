@@ -11,6 +11,7 @@ public class MemberForm {
     private String id;
     private String password;
     private String passwordCheck;
+
     private String gender;
     private String coupleId;
 }
