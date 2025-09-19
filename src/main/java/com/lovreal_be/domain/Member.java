@@ -1,8 +1,13 @@
 package com.lovreal_be.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -12,24 +17,33 @@ public class Member {
     @Column(name = "id")
     private String id;
 
+    @Column(name = "nickname")
+    private String nickname;
+
     @Column(name = "password")
     private String password;
 
     @Column(name = "gender")
     private String gender;
 
-    @Column(name = "couple_id")
-    private String coupleId;
+    @Column(name = "inviteCode")
+    private String inviteCode;
 
-    @Column(name = "couple_request")
-    private String coupleRequest;
+    @Column(name = "parterId")
+    private String partnerId;
 
-    public Member(String id, String password, String gender) {
+    @Column(name = "coupleDate")
+    private LocalDate coupleDate;
+
+    public Member(String nickname, String id, String password, String gender) {
+        this.nickname = nickname;
         this.id = id;
         this.password = password;
         this.gender = gender;
     }
 
-    public Member() {}
+    public Member() {
+
+    }
 }
 
