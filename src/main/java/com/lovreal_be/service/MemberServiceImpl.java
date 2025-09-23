@@ -5,11 +5,13 @@ import com.lovreal_be.config.SecurityConfig;
 import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.DTO.StoryForm;
+import com.lovreal_be.domain.Gender;
 import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.repository.StoryRepository;
 import com.lovreal_be.domain.Member;
 import com.lovreal_be.domain.Story;
 import com.lovreal_be.domain.StoryImg;
+import com.lovreal_be.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -35,6 +37,7 @@ public class MemberServiceImpl {
     private final StoryRepository storyRepository;
     private final S3Service s3Service;
     private final JwtService jwtService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -52,7 +55,7 @@ public class MemberServiceImpl {
             String id = form.getId();
             String password = form.getPassword();
             String encodedPassword = securityConfig.encoder().encode(password);
-            String gender = form.getGender();
+            Gender gender = form.getGender();
             Member member = new Member(nickname, id, encodedPassword, gender);
             memberRepository.save(member);
             return ResponseEntity.status(200).body("회원가입 완료");
@@ -168,18 +171,23 @@ public class MemberServiceImpl {
             return null;
         }
         String gender = "";
-        if(Objects.equals(partner.getGender(), "male")) {
+        if(Objects.equals(partner.getGender(), Gender.M )) {
             gender = "남자";
         }
-        else {
+        else if(Objects.equals(partner.getGender(), Gender.F)) {
             gender = "여자";
+        }
+        else {
+            gender = "설정해주세요.";
         }
         return new String[]{member.getNickname(), partner.getNickname(), member.getCoupleDate().toString(), gender};
     }
 
-    public void writeNewStory(StoryForm storyForm,HttpServletResponse response, HttpServletRequest request) throws IOException {
+    public void writeNewStory(StoryForm storyForm,HttpServletResponse response,String token, HttpServletRequest request) throws IOException {
         System.out.println("urls = " );
-        Member member = jwtService.getTokenAndFindMember(request);
+//        Member member = jwtService.getTokenAndFindMember(request);
+        String memberNumber = jwtTokenProvider.getMemberStringFromJWT(token);
+        Member member = memberRepository.findById(memberNumber).orElse(null);
         response.setContentType("application/json; charset=UTF-8");
         if(member == null) {
             String jsonResponse = String.format(

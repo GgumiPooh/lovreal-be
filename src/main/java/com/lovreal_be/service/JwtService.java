@@ -43,12 +43,11 @@ public class JwtService {
         return jwtTokenProvider.generateToken(stored.getId());
     }
 
-    public Member   getTokenAndFindMember(HttpServletRequest request) {
+    public Member getTokenAndFindMember(HttpServletRequest request) {
         String token = bearerTokenResolver.resolve(request);
         System.out.println("token: " + token);
-            String memberId = jwtTokenProvider.getMemberIdFromJWT(token);
-            return memberRepository.findById(memberId)
-                    .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials."));
+            String memberString = jwtTokenProvider.getMemberStringFromJWT(token);
+            return memberRepository.findById(memberString).orElseThrow(() -> new UsernameNotFoundException("Invalid credentials."));
         }
 
 }

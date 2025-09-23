@@ -1,4 +1,5 @@
 package com.lovreal_be.security;
+import jakarta.servlet.http.Cookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,20 +43,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
             System.out.println("HTTP Method: " + request.getMethod());
-            String jwt = getJwtFromRequest(request);
-            System.out.println("jwt: " + jwt);
-            System.out.println("StringUtils.hasText(jwt): " + StringUtils.hasText(jwt));
-            System.out.println("validateToken: "+tokenProvider.validateToken(jwt));
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String memberId = tokenProvider.getMemberIdFromJWT(jwt);
-                System.out.println("memberId: " + memberId);
-                UserDetails userDetails = userDetailsService.loadUserByUsername(memberId);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+//            String jwt = getJwtFromRequest(request);
+            if (request.getCookies() != null) {
+                for (Cookie cookie : request.getCookies()) {
+                    if ("jwt_token".equals(cookie.getName())) {
+                        String jwt =  cookie.getValue();
+                        System.out.println("jwt: " + jwt);
+                        System.out.println("StringUtils.hasText(jwt): " + StringUtils.hasText(jwt));
+                        System.out.println("validateToken: "+tokenProvider.validateToken(jwt));
+                        if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+                            String memberString = tokenProvider.getMemberStringFromJWT(jwt);
+                            System.out.println("memberId: " + memberString);
+                            UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(memberString));
+                            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                System.out.println("authentication = " + authentication);
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                            System.out.println("authentication = " + authentication);
+                        }}
+                }
             }
+
         } catch (Exception ex) {
             System.out.println("ex = " + ex);
             // Log the exception

@@ -8,8 +8,7 @@ import javax.crypto.SecretKey;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+
 @Component
 public class JwtTokenProvider {
 
@@ -18,7 +17,6 @@ public class JwtTokenProvider {
     // application.yml 예: jwt.secret: "3R2p9v... (Base64 인코딩 문자열)"
     public JwtTokenProvider(@Value("${jwt.secret}") String secret,
                             @Value("${jwt.expiration}") Duration accessTtl) {
-        this.accessTtl = accessTtl;
         // Base64를 권장. (그냥 문자열이면 길이가 32바이트 이상인지 체크 필요)
         byte[] keyBytes;
         try {
@@ -33,23 +31,20 @@ public class JwtTokenProvider {
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
     }
 
-    private final Duration accessTtl;
-
-    public String generateToken(String memberId) {
+    public String generateToken(String memberString) {
         Instant now = Instant.now();
-        Instant exp = now.plus(accessTtl);
+        Instant exp = now.plus(Duration.ofMinutes(30));
 
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
-                .setSubject(memberId)
-                .claim("memberId", memberId)
+                .setSubject(memberString)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(exp))
                 .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String getMemberIdFromJWT(String token) {
+    public String getMemberStringFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(signingKey)
                 .build()

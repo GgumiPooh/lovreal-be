@@ -20,15 +20,18 @@ public class UserDetailServiceImpl implements UserDetailsService {
     private MemberRepository memberRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String memberString) throws UsernameNotFoundException {
 
-        Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("아이디를 찾을 수 없습니다: " + id));
+        Member member = memberRepository.findByMemberString(memberString);
+        if(member == null) {
+            throw new UsernameNotFoundException("memberString를 찾을 수 없습니다: " + memberString);
+        }
+//                .orElseThrow(() -> new UsernameNotFoundException("memberString를 찾을 수 없습니다: " + memberString));
 
         // Spring Security의 UserDetails를 구현하는 클래스를 반환
         // 여기서는 임시로 Spring Security의 기본 User 클래스를 사용합니다.
         // 실제 애플리케이션에서는 커스텀 UserDetails 구현체를 사용하는 것이 좋습니다.
-        return new User(member.getId(), member.getPassword(), Collections.emptyList() // 권한 목록 (임시로 비워둠)
+        return new User(member.getMemberString(), member.getNickname(), Collections.emptyList() // 권한 목록 (임시로 비워둠)
         );
     }
 }

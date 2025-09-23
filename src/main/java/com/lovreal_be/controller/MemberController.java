@@ -56,9 +56,9 @@ public class MemberController {
     }
 
     @PostMapping("/new-story")
-    public void newStory(@ModelAttribute StoryForm storyForm, HttpServletResponse response, HttpServletRequest request) throws IOException {
+    public void newStory(@CookieValue(name = "jwt_token") String jwtToken, @ModelAttribute StoryForm storyForm, HttpServletResponse response, HttpServletRequest request) throws IOException {
         System.out.println("storyForm = " + storyForm);
-        memberServiceImpl.writeNewStory(storyForm,response, request);
+        memberServiceImpl.writeNewStory(storyForm,response, jwtToken, request);
     }
 }
 

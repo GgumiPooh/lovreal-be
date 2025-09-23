@@ -1,21 +1,33 @@
 package com.lovreal_be.domain;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 
 @Setter
 @Getter
 @Entity
 public class Member {
+
     @Id
-    @Column(name = "id")
-    private String id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2") // 하이픈 포함된 UUID
+    @Column(columnDefinition = "VARCHAR(36)")
+    private String memberString;
+
+    @Column
+    private Provider provider;
+
+    @Column(name = "provider_member_id")
+    private String  providerMemberId;
+
+
+    @Column(name = "id", nullable = true)
+    private String  id;
 
     @Column(name = "nickname")
     private String nickname;
@@ -23,8 +35,8 @@ public class Member {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "gender")
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
 
     @Column(name = "inviteCode")
     private String inviteCode;
@@ -40,17 +52,17 @@ public class Member {
 
     public Member(){}
 
-    public Member(String nickname, String id, String password, String gender) {
+    public Member(String nickname, String id, String password, Gender gender) {
         this.nickname = nickname;
         this.id = id;
         this.password = password;
         this.gender = gender;
     }
 
-    public Member(String id, String gender) {
-        this.id = id;
+    public Member(String nickname, String ProviderMemberId,  Gender gender) {
+        this.nickname = nickname;
+        this.providerMemberId = ProviderMemberId;
         this.gender = gender;
-
     }
-}
 
+}
