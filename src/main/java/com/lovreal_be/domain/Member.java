@@ -52,17 +52,19 @@ public class Member {
 
     public Member(){}
 
-    public Member(String nickname, String id, String password, Gender gender) {
+    public Member(String nickname, String id, String password, Gender gender, Provider provider) {
         this.nickname = nickname;
         this.id = id;
         this.password = password;
         this.gender = gender;
+        this.provider = provider;
     }
 
-    public Member(String nickname, String ProviderMemberId,  Gender gender) {
+    public Member(String nickname, String ProviderMemberId,  Gender gender, Provider provider) {
         this.nickname = nickname;
         this.providerMemberId = ProviderMemberId;
         this.gender = gender;
+        this.provider = provider;
     }
 
 }

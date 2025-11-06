@@ -3,6 +3,7 @@ package com.lovreal_be.controller;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.service.JwtService;
 import com.lovreal_be.service.MemberServiceImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,11 +21,11 @@ public class PublicController {
     }
 
     @PostMapping("/login")
-    public String login(@ModelAttribute MemberForm form) {
+    public ResponseEntity<String> login(@ModelAttribute MemberForm form, HttpServletResponse response) {
         try {
-            return jwtService.login(form);
+            return memberServiceImpl.memberStatusCheck(jwtService.login(form, response));
         } catch (Exception e) {
-            return e.getMessage();
+            return ResponseEntity.status(500).body(e.getMessage());
         }
     }
 }

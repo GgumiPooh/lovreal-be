@@ -1,12 +1,14 @@
 package com.lovreal_be.security;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component
-public class BearerTokenResolver {
+public class BearerTokenResolver implements TokenResolver {
     public String resolve(HttpServletRequest request) {
+
         String header = request.getHeader("Authorization");
         String prefix = "Bearer ";
         if (StringUtils.hasText(header) &&

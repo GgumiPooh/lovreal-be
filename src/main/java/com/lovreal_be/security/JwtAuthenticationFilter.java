@@ -52,9 +52,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         System.out.println("StringUtils.hasText(jwt): " + StringUtils.hasText(jwt));
                         System.out.println("validateToken: "+tokenProvider.validateToken(jwt));
                         if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                            String memberString = tokenProvider.getMemberStringFromJWT(jwt);
-                            System.out.println("memberId: " + memberString);
-                            UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(memberString));
+                            String memberString = tokenProvider.getMemberFromJWT(jwt).getMemberString();
+//                            System.out.println("memberId: " + memberString);
+                        UserDetails userDetails = userDetailsService.loadUserByUsername(String.valueOf(memberString));
                             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
@@ -67,9 +67,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception ex) {
             System.out.println("ex = " + ex);
             // Log the exception
+        } finally {
+            filterChain.doFilter(request, response);
         }
 
-        filterChain.doFilter(request, response);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

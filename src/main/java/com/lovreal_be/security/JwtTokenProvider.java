@@ -1,7 +1,13 @@
 package com.lovreal_be.security;
+import com.lovreal_be.domain.Member;
+import com.lovreal_be.repository.MemberRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -12,11 +18,15 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
+    private final String TOKEN_NAME = "jwt_token";
+    @Value("${jwt.secret}")
+    private String secret;
     private final SecretKey signingKey;
+    private final MemberRepository memberRepository;
 
     // application.yml 예: jwt.secret: "3R2p9v... (Base64 인코딩 문자열)"
     public JwtTokenProvider(@Value("${jwt.secret}") String secret,
-                            @Value("${jwt.expiration}") Duration accessTtl) {
+                            @Value("${jwt.expiration}") Duration accessTtl, MemberRepository memberRepository) {
         // Base64를 권장. (그냥 문자열이면 길이가 32바이트 이상인지 체크 필요)
         byte[] keyBytes;
         try {
@@ -29,6 +39,7 @@ public class JwtTokenProvider {
             throw new IllegalArgumentException("jwt.secret must be at least 256 bits (32 bytes)");
         }
         this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        this.memberRepository = memberRepository;
     }
 
     public String generateToken(String memberString) {
@@ -44,13 +55,29 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getMemberStringFromJWT(String token) {
+    public void addTokenToCookie(String token, HttpServletResponse  response) {
+        ResponseCookie cookie = ResponseCookie.from(TOKEN_NAME, token)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("None")
+                .path("/")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        System.out.println("cookie = " + cookie);
+//        Cookie cookie = new Cookie(TOKEN_NAME, token)
+//                .setPath("/")
+//                .setHttpOnly(true);
+//        response.addCookie(cookie);
+    }
+
+    public Member getMemberFromJWT(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        String memberString = claims.getSubject();
+        return memberRepository.findByMemberString(memberString);
     }
 
     public boolean validateToken(String token) {

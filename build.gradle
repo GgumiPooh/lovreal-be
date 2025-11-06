@@ -43,11 +43,6 @@ dependencies {
 //    implementation 'software.amazon.awssdk:s3'
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.0'
 
-    //jwt
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly  'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly  'io.jsonwebtoken:jjwt-jackson:0.11.5'  // 또는 jjwt-gson / jjwt-jaxb
-
 	implementation 'com.mysql:mysql-connector-j'
 
 	//jwt
@@ -60,6 +55,10 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'      // MVC
     implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebClient용
+
+    //Spring Boot 3.5.3에는 Hibernate 6.x가 기본 포함 이 버전은 org.jboss.logging.Logger 클래스 필수
+    implementation 'org.jboss.logging:jboss-logging:3.5.0.Final'
+
 }
 
 //tasks.named('test') {

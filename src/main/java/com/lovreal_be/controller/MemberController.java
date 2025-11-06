@@ -24,6 +24,14 @@ public class MemberController {
     private final BearerTokenResolver bearerTokenResolver;
     private final JwtService jwtService;
 
+    @GetMapping("/api/member/status-check")
+    public ResponseEntity<String> memberStatusCheck(@CookieValue(name = "jwt_token")  String jwtToken) {
+        System.out.println("aaaaaaaaaaaaaaaaa");
+        Member member = jwtTokenProvider.getMemberFromJWT(jwtToken);
+        System.out.println("member.getNickname() = " + member.getNickname());
+        return memberServiceImpl.memberStatusCheck(member);
+    }
+
     @PostMapping("/input-invite-code")
     public ResponseEntity<String> inputInviteCode(@RequestParam("inviteCode") String inviteCode, HttpServletRequest request) {
         try {
@@ -42,9 +50,9 @@ public class MemberController {
     }
 
     @PostMapping("/couple-date")
-    public void beCoupleDay(@RequestBody CoupleDate coupleDate, HttpServletRequest request, HttpServletResponse response) {
+    public void beCoupleDay(@RequestBody CoupleDate coupleDate, @CookieValue(name = "jwt_token") String token, HttpServletRequest request, HttpServletResponse response) {
         System.out.println("coupleDate = " + coupleDate);
-        memberServiceImpl.setBeCoupledDay(coupleDate, request, response);
+        memberServiceImpl.setBeCoupledDay(coupleDate, jwtTokenProvider.getMemberFromJWT(token), request, response);
     }
 
     @PostMapping("/profile")

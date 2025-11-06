@@ -3,7 +3,9 @@ package com.lovreal_be.controller;
 import com.lovreal_be.domain.Member;
 import com.lovreal_be.domain.OAuthMember;
 import com.lovreal_be.security.JwtTokenProvider;
+import com.lovreal_be.security.TokenResolver;
 import com.lovreal_be.service.JwtService;
+import com.lovreal_be.service.MemberServiceImpl;
 import com.lovreal_be.service.NaverAuthService;
 import com.lovreal_be.service.NaverProfileClient;
 import jakarta.servlet.http.Cookie;
@@ -23,13 +25,19 @@ import java.io.IOException;
 public class OAuthController {
     private final NaverProfileClient naverProfileClient;
     private final JwtService jwtService;
-    String afterUrl =  "http://localhost:5173/oAuth-login";
+    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenResolver tokenResolver;
+    private final MemberServiceImpl memberServiceImpl;
+    String afterUrl =  "http://localhost:5173/member/recieveOrSend";
     private final NaverAuthService naverAuthService;
 
-    public OAuthController(NaverAuthService naverAuthService, NaverProfileClient naverProfileClient, JwtService jwtService) {
+    public OAuthController(NaverAuthService naverAuthService, NaverProfileClient naverProfileClient, JwtService jwtService, JwtTokenProvider jwtTokenProvider, TokenResolver tokenResolver, MemberServiceImpl memberServiceImpl) {
         this.naverAuthService = naverAuthService;
         this.naverProfileClient = naverProfileClient;
         this.jwtService = jwtService;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.tokenResolver = tokenResolver;
+        this.memberServiceImpl = memberServiceImpl;
     }
 
     @GetMapping("/api/public/auth/naver/login")
@@ -50,12 +58,12 @@ public class OAuthController {
             @RequestParam String code, @RequestParam String state, @CookieValue(name = "naver_state", required=false) String cookieState,
             HttpServletResponse response, HttpServletRequest request
     ) throws IOException {
-        if(cookieState==null){
+        if (cookieState == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         System.out.println("code: " + code);
         // 1) state 검증 (프론트에서 보냈던 random과 같은지)
-        if(!state.equals(cookieState)){
+        if (!state.equals(cookieState)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         // 2) code로 토큰 요청
@@ -63,19 +71,13 @@ public class OAuthController {
         System.out.println("accessToken = " + accessToken);
         //access token 저장 & jwt발급?
         Member member = naverAuthService.findOrCreateMember(accessToken);
-        String jwtToken = naverAuthService.generateJwt(member.getMemberString());
+        String jwtToken = jwtTokenProvider.generateToken(member.getMemberString());
+        jwtTokenProvider.addTokenToCookie(jwtToken, response);
+
         System.out.println("jwtToken = " + jwtToken);
-        Cookie c = new Cookie("jwt_token", jwtToken);
-        c.setHttpOnly(true);
-        c.setSecure(true);
-        c.setPath("/");
-        response.addCookie(c);
-
         response.sendRedirect(afterUrl);
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
-
 
 
 }

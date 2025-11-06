@@ -5,12 +5,9 @@ import com.lovreal_be.config.SecurityConfig;
 import com.lovreal_be.DTO.CoupleDate;
 import com.lovreal_be.DTO.MemberForm;
 import com.lovreal_be.DTO.StoryForm;
-import com.lovreal_be.domain.Gender;
+import com.lovreal_be.domain.*;
 import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.repository.StoryRepository;
-import com.lovreal_be.domain.Member;
-import com.lovreal_be.domain.Story;
-import com.lovreal_be.domain.StoryImg;
 import com.lovreal_be.security.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -36,8 +33,8 @@ public class MemberServiceImpl {
     private final SecurityConfig securityConfig;
     private final StoryRepository storyRepository;
     private final S3Service s3Service;
-    private final JwtService jwtService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final NaverAuthService naverAuthService;
 
     public ResponseEntity<?> idDuplicateCheck(String id) {
         if (memberRepository.findById(id).isPresent()) {
@@ -56,7 +53,7 @@ public class MemberServiceImpl {
             String password = form.getPassword();
             String encodedPassword = securityConfig.encoder().encode(password);
             Gender gender = form.getGender();
-            Member member = new Member(nickname, id, encodedPassword, gender);
+            Member member = new Member(nickname, id, encodedPassword, gender, Provider.LOVREAL);
             memberRepository.save(member);
             return ResponseEntity.status(200).body("회원가입 완료");
         } catch (Exception e) {
@@ -100,6 +97,18 @@ public class MemberServiceImpl {
             return ResponseEntity.ok().body("초대코드가 존재합니다.");
     }
 
+    public ResponseEntity<String> memberStatusCheck(Member member) {
+        if(member.getPartnerId() == null) {
+            return ResponseEntity.status(201).body("커플 맺기");
+        }
+        else if(member.getCoupleDate() == null) {
+            return ResponseEntity.status(202).body("커플이 된 날");
+        }
+        else {
+            return ResponseEntity.ok().build();
+        }
+    }
+
 
     public ResponseEntity<String> beCouple(String inviteCode, Member member) {
             Member partner = memberRepository.findByInviteCode(inviteCode);
@@ -117,8 +126,7 @@ public class MemberServiceImpl {
             return ResponseEntity.status(400).body("코드를 다시 확인해주세요.");
     }
 
-    public String[] memberAndPartnerName(HttpServletRequest request) {
-        Member member = jwtService.getTokenAndFindMember(request);
+    public String[] memberAndPartnerName(Member member) {
         Member partner = memberRepository.findById(member.getPartnerId()).orElse(null);
         if(partner == null) {
             return null;
@@ -126,10 +134,9 @@ public class MemberServiceImpl {
         return new String []{member.getNickname(), partner.getNickname()};
     }
 
-    public void setBeCoupledDay(CoupleDate coupleDate, HttpServletRequest request, HttpServletResponse response) {
+    public void setBeCoupledDay(CoupleDate coupleDate, Member member, HttpServletRequest request, HttpServletResponse response) {
 
         try {
-            Member member = jwtService.getTokenAndFindMember(request);
             if(coupleDate.getMonth().hashCode()<10){
                 coupleDate.setMonth("0"+coupleDate.getMonth());
             }
@@ -160,8 +167,7 @@ public class MemberServiceImpl {
 
     }
 
-    public String[] memberHome(HttpServletRequest request) {
-        Member member = jwtService.getTokenAndFindMember(request);
+    public String[] memberHome(Member member) {
 //        String memberId = request.getSession().getAttribute(MEMBER_ID).toString();
         if(member == null) {
             return null;
@@ -186,8 +192,7 @@ public class MemberServiceImpl {
     public void writeNewStory(StoryForm storyForm,HttpServletResponse response,String token, HttpServletRequest request) throws IOException {
         System.out.println("urls = " );
 //        Member member = jwtService.getTokenAndFindMember(request);
-        String memberNumber = jwtTokenProvider.getMemberStringFromJWT(token);
-        Member member = memberRepository.findById(memberNumber).orElse(null);
+        Member member = jwtTokenProvider.getMemberFromJWT(token);
         response.setContentType("application/json; charset=UTF-8");
         if(member == null) {
             String jsonResponse = String.format(
@@ -216,8 +221,7 @@ public class MemberServiceImpl {
        response.getWriter().write(jsonResponse);
     }
 
-    public List<StoryForm> board(HttpServletRequest request, HttpServletResponse response) {
-        Member member = jwtService.getTokenAndFindMember(request);
+    public List<StoryForm> board(Member member, HttpServletRequest request, HttpServletResponse response) {
         String memberId = member.getId();
         System.out.println("memberId = " + memberId);
         List<StoryForm> body = storyRepository.findByMemberId(memberId)
@@ -232,15 +236,13 @@ public class MemberServiceImpl {
 
     }
 
-    public Long dDayCalculator(HttpServletRequest request) {
-        Member member = jwtService.getTokenAndFindMember(request);
+    public Long dDayCalculator(Member member) {
         LocalDate coupleDay = member.getCoupleDate();
         LocalDate today = LocalDate.now();
         return ChronoUnit.DAYS.between(coupleDay, today);
     }
 
-    public String memberProfileImg(HttpServletRequest request) {
-        Member member = jwtService.getTokenAndFindMember(request);
+    public String memberProfileImg(Member member) {
         if(member.getProfileImg() == null) {
             return "https://lovreal-files.s3.ap-northeast-2.amazonaws.com/images/%E1%84%80%E1%85%B5%E1%84%87%E1%85%A9%E1%86%AB%E1%84%8B%E1%85%B5%E1%84%86%E1%85%B5%E1%84%8C%E1%85%B5.jpg";
         }

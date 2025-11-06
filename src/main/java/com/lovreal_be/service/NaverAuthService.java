@@ -3,6 +3,7 @@ package com.lovreal_be.service;
 import com.lovreal_be.domain.Gender;
 import com.lovreal_be.domain.Member;
 import com.lovreal_be.domain.OAuthMember;
+import com.lovreal_be.domain.Provider;
 import com.lovreal_be.repository.MemberRepository;
 import com.lovreal_be.repository.OAuthMemberRepository;
 import com.lovreal_be.security.JwtTokenProvider;
@@ -76,7 +77,7 @@ public class NaverAuthService {
         if (memberRepository.findByProviderMemberId(providerMemberId) == null) {
             String nickName = naverProfileClient.getProfile(accessToken).response().name();
             Gender gender = Gender.valueOf(naverProfileClient.getProfile(accessToken).response().gender());
-            Member member = new Member(nickName, providerMemberId, gender);
+            Member member = new Member(nickName, providerMemberId, gender, Provider.NAVER );
             memberRepository.save(member);
             return member;
         }
